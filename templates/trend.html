@@ -32,20 +32,36 @@
         </div>
         <div id="content">
             <h2>Trend Chart</h2>
-            <canvas id="trendChart" width="400" height="200"></canvas>
+            <canvas id="trendChart" width="800" height="400"></canvas>
             <script>
                 var ctx = document.getElementById('trendChart').getContext('2d');
                 var trendChart = new Chart(ctx, {
                     type: 'line',
                     data: {
                         labels: {{ dates|tojson }},
-                        datasets: [{
-                            label: 'Coverage',
-                            data: {{ coverage_values|tojson }},
-                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                            borderColor: 'rgba(75, 192, 192, 1)',
-                            borderWidth: 1
-                        }]
+                        datasets: [
+                            {
+                                label: 'Backend Coverage',
+                                data: {{ backend_coverage_values|tojson }},
+                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Common Coverage',
+                                data: {{ common_coverage_values|tojson }},
+                                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                borderColor: 'rgba(255, 99, 132, 1)',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Frontend Coverage',
+                                data: {{ frontend_coverage_values|tojson }},
+                                backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                                borderColor: 'rgba(255, 206, 86, 1)',
+                                borderWidth: 1
+                            }
+                        ]
                     },
                     options: {
                         scales: {
