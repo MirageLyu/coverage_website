@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, abort
+from flask import Flask, render_template, request, abort, send_from_directory
 import os
 
 app = Flask(__name__)
@@ -45,8 +45,10 @@ def build_sidebar(current_path):
     dates = set()
     for dir_name in os.listdir(daily_ut_dir):
         if os.path.isdir(os.path.join(daily_ut_dir, dir_name)):
-            date_str = '-'.join(dir_name.split('-')[3:])
-            dates.add(date_str)
+            parts = dir_name.split('_')
+            if len(parts) >= 3:
+                date_str = parts[-1]
+                dates.add(date_str)
     for date in sorted(dates, reverse=True):
         date_item = {
             'label': date,
@@ -56,7 +58,8 @@ def build_sidebar(current_path):
         }
         for dir_name in os.listdir(daily_ut_dir):
             if os.path.isdir(os.path.join(daily_ut_dir, dir_name)):
-                if '-'.join(dir_name.split('-')[3:]) == date:
+                parts = dir_name.split('_')
+                if len(parts) >= 3 and parts[-1] == date:
                     url = f'/daily-ut/{dir_name}/'.rstrip('/')
                     active = current_path == url
                     date_item['children'].append({'label': dir_name, 'url': url, 'children': [], 'active': active})
@@ -107,6 +110,20 @@ def uitest(directory_path):
     with open(index_html_path, 'r') as f:
         content = f.read()
     return render_template('base.html', sidebar=sidebar, content=content, current_path=request.path)
+
+@app.route('/content/<path:file_path>')
+def content(file_path):
+    # Define the root directory for content files
+    content_dir = 'content'
+    # Construct the full file path
+    full_path = os.path.join(content_dir, file_path)
+    # Check if the file exists and is within the content directory
+    if os.path.commonprefix([full_path, content_dir]) != content_dir:
+        abort(404)
+    if not os.path.isfile(full_path):
+        abort(404)
+    # Serve the file using send_file
+    return send_file(full_path)
 
 if __name__ == '__main__':
     app.run(debug=True)
