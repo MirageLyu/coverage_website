@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>vnext code coverage - Trend</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div id="header">
+        <h1>vnext code coverage</h1>
+    </div>
+    <div id="wrapper">
+        <div id="sidebar">
+            {% macro render_menu(items, current_path) %}
+                <ul>
+                    {% for item in items %}
+                        <li>
+                            {% if item.children %}
+                                <a href="{{ item.url }}" class="toggle {% if item.active %}active{% endif %}">{{ item.label }}</a>
+                                <ul class="submenu {% if item.active %}active{% endif %}">
+                                    {{ render_menu(item.children, current_path) }}
+                                </ul>
+                            {% else %}
+                                <a href="{{ item.url }}" {% if item.active %}class="active"{% endif %}>{{ item.label }}</a>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endmacro %}
+            {{ render_menu(sidebar, current_path)|safe }}
+        </div>
+        <div id="content">
+            <h2>Trend Chart</h2>
+            <canvas id="trendChart" width="400" height="200"></canvas>
+            <script>
+                var ctx = document.getElementById('trendChart').getContext('2d');
+                var trendChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: {{ dates|tojson }},
+                        datasets: [{
+                            label: 'Coverage',
+                            data: {{ coverage_values|tojson }},
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            </script>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var toggles = document.querySelectorAll('#sidebar .toggle');
+            toggles.forEach(function(el) {
+                el.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    var submenu = this.nextElementSibling;
+                    if (submenu && submenu.classList.contains('submenu')) {
+                        submenu.classList.toggle('active');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
